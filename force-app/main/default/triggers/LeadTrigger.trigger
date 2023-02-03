@@ -1,3 +1,4 @@
 trigger LeadTrigger on Lead(before insert, before update) {
-  new LeadTriggerHandler().handleInsertAndUpdate();
+  LeadTriggerHandler lth = new LeadTriggerHandler();
+  lth.fillLeadsScore(Trigger.new);
 }

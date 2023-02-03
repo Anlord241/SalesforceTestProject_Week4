@@ -2,7 +2,8 @@ public with sharing class OpportunityProductTriggerHandler {
   public OpportunityProductTriggerHandler() {
   }
 
-  private void pullProductFamily(List<OpportunityLineItem> items) {
+  @TestVisible
+  public void pullProductFamily(List<OpportunityLineItem> items) {
     List<Id> productIds = new List<Id>();
     for (OpportunityLineItem item : (List<OpportunityLineItem>) items) {
       productIds.add(item.Product2Id);
@@ -16,9 +17,5 @@ public with sharing class OpportunityProductTriggerHandler {
     for (OpportunityLineItem item : (List<OpportunityLineItem>) items) {
       item.Product_Family__c = productMap.get(item.Product2Id).Family;
     }
-  }
-
-  public void handleInsertAndUpdate() {
-    pullProductFamily(Trigger.new);
   }
 }

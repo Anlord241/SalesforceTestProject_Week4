@@ -2,10 +2,9 @@ public with sharing class ProductTriggerHandler {
   public ProductTriggerHandler() {
   }
 
-  private void fillProductFamilyField(List<Product2> products) {
+  public void fillProductFamilyField(List<Product2> products) {
     List<Product_Family_by_Code_Mapping__mdt> metadata = Product_Family_by_Code_Mapping__mdt.getAll()
       .values();
-    List<Id> oppportunityProductIds = new List<Id>();
     Map<String, String> productFamilyMap = new Map<String, String>();
     for (Product_Family_by_Code_Mapping__mdt item : metadata) {
       productFamilyMap.put(item.Product_Code__c, item.Product_Family__c);
@@ -13,28 +12,29 @@ public with sharing class ProductTriggerHandler {
     for (Product2 item : products) {
       if (productFamilyMap.containsKey(item.ProductCode)) {
         item.Family = productFamilyMap.get(item.ProductCode);
-        oppportunityProductIds.add(item.Id);
       } else {
         item.addError(
-          'Such product code is not allowed in the system. Please update the PFC mapping or contact administrator'
+          'Such product code is not allowed in the system. Please update the PFC mapping or contact administrator!'
         );
       }
     }
-    Map<Id, Product2> productsMap = new Map<Id, Product2>(products);
+  }
 
+  public void updateRelatedOpportunityProducts(List<Product2> products) {
+    Map<Id, Product2> productsMap = new Map<Id, Product2>(products);
+    List<Id> productIds = new List<Id>();
+    for (Product2 item : products) {
+      productIds.add(item.Id);
+    }
     List<OpportunityLineItem> opportunityProducts = [
-      SELECT Id
+      SELECT Id, Product2Id
       FROM OpportunityLineItem
-      WHERE Product2Id IN :oppportunityProductIds
+      WHERE Product2Id IN :productIds
     ];
 
     for (OpportunityLineItem item : opportunityProducts) {
       item.Product_Family_Match__c = productsMap.get(item.Product2Id).Family;
     }
     update opportunityProducts;
-  }
-
-  public void handleInsertAndUpdate() {
-    fillProductFamilyField(Trigger.new);
   }
 }

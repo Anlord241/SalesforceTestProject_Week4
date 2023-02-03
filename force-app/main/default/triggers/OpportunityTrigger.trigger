@@ -1,3 +1,10 @@
 trigger OpportunityTrigger on Opportunity(before insert, before update) {
-  new OpportunityTriggerHandler().handleInsertAndUpdate();
+  OpportunityTriggerHandler oth = new OpportunityTriggerHandler();
+
+  oth.setRecordType(Trigger.new);
+  oth.deleteAccountInterests(Trigger.new);
+  oth.createAccountInterests(
+    Trigger.new,
+    (Map<Id, Opportunity>) Trigger.oldMap
+  );
 }

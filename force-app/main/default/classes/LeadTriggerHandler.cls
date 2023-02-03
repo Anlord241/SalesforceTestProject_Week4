@@ -45,13 +45,9 @@ public with sharing class LeadTriggerHandler {
     return score;
   }
 
-  private void fillLeadsScore(List<Lead> items) {
+  public void fillLeadsScore(List<Lead> items) {
     for (Lead item : items) {
       item.Score__c = countScore(item);
     }
-  }
-
-  public void handleInsertAndUpdate() {
-    fillLeadsScore(Trigger.new);
   }
 }

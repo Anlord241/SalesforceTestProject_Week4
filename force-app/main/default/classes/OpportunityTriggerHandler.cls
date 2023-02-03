@@ -5,7 +5,7 @@ public with sharing class OpportunityTriggerHandler {
   public OpportunityTriggerHandler() {
   }
 
-  private void setRecordType(List<Opportunity> opportunities) {
+  public void setRecordType(List<Opportunity> opportunities) {
     String groupSaleId = [
       SELECT id
       FROM RecordType
@@ -28,7 +28,7 @@ public with sharing class OpportunityTriggerHandler {
     }
   }
 
-  private void deleteAccountInterests(List<Opportunity> opportunities) {
+  public void deleteAccountInterests(List<Opportunity> opportunities) {
     List<String> opportunitiesIds = new List<String>();
 
     List<Account_Interest__c> accountInterests = new List<Account_Interest__c>();
@@ -45,7 +45,7 @@ public with sharing class OpportunityTriggerHandler {
     delete accountInterests;
   }
 
-  private void createAccountInterests(
+  public void createAccountInterests(
     List<Opportunity> opportunities,
     Map<Id, Opportunity> oldOpportunitiesMap
   ) {
@@ -55,17 +55,18 @@ public with sharing class OpportunityTriggerHandler {
     for (Opportunity item : opportunities) {
       if (
         item.StageName.equals('Closed Won') &&
+        oldOpportunitiesMap != null &&
         !oldOpportunitiesMap.get(item.Id).StageName.equals('Closed Won')
       ) {
         opportunitiesIds.add(item.Id);
       }
     }
-    List<OpportunityLineItem> products = [
+    List<OpportunityLineItem> opportunityProducts = [
       SELECT OpportunityId, Name
       FROM OpportunityLineItem
       WHERE OpportunityId IN :opportunitiesIds
     ];
-    for (OpportunityLineItem item : products) {
+    for (OpportunityLineItem item : opportunityProducts) {
       newAccountInterests.add(
         new Account_Interest__c(
           Deal_Link__c = item.OpportunityId,
@@ -74,21 +75,5 @@ public with sharing class OpportunityTriggerHandler {
       );
     }
     insert newAccountInterests;
-  }
-
-  private void processRelatedAccountInterests(
-    List<Opportunity> opportunities,
-    Map<Id, Opportunity> oldOpportunitiesMap
-  ) {
-    deleteAccountInterests(opportunities);
-    createAccountInterests(opportunities, oldOpportunitiesMap);
-  }
-
-  public void handleInsertAndUpdate() {
-    setRecordType(Trigger.new);
-    processRelatedAccountInterests(
-      Trigger.new,
-      (Map<Id, Opportunity>) Trigger.oldMap
-    );
   }
 }
