@@ -55,8 +55,8 @@ public with sharing class OpportunityTriggerHandler {
     for (Opportunity item : opportunities) {
       if (
         item.StageName.equals('Closed Won') &&
-        oldOpportunitiesMap != null &&
-        !oldOpportunitiesMap.get(item.Id).StageName.equals('Closed Won')
+        (oldOpportunitiesMap == null ||
+        !oldOpportunitiesMap.get(item.Id).StageName.equals('Closed Won'))
       ) {
         opportunitiesIds.add(item.Id);
       }
